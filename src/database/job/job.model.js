@@ -2,13 +2,13 @@ import mongoose from "mongoose"
 const JobSchema = new mongoose.Schema({
     title: { type: String, required: true, trim: true },
     company: { type: Types.ObjectId, ref: 'Company', required: true },
+    employerId: { type: Types.ObjectId, ref: 'User'},
     category: { 
         type: String, 
         enum: ['Sales', 'Engineering', 'Marketing', 'HR', 'Accounting', 'IT', 'Customer Service'], 
         required: true 
     },
     description: { type: String, required: true },
-    
     // Requirements for Matching
     skillsRequired: [{ type: String }],
     experienceLevel: { type: String, enum: ['Entry', 'Mid', 'Senior', 'Expert'] },
