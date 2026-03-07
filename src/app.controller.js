@@ -2,6 +2,8 @@ import cors from 'cors';
 import {connectDB} from './database/DB.connection.js';
 import authRouter from './modules/auth/auth.controller.js';
 import userRouter from './modules/user/user.controller.js';
+import jobRouter from './modules/job/job.controller.js';
+import companyRouter from './modules/company/company.controller.js';
 export const bootstrap =async(app ,express)=>{
     console.log("Bootstrap is running..."); // TEST 1
     app.use(express.json());
@@ -10,11 +12,9 @@ export const bootstrap =async(app ,express)=>{
     await connectDB();
 
 
-    app.get("/ping", (req, res) => res.send("pong"));
-
-
-
     app.use("/auth", authRouter)
     app.use("/user", userRouter)
-    // TEST 3: Direct route to bypass the imported router
+    app.use("/job", jobRouter)
+    app.use("/company", companyRouter)
+    
 }

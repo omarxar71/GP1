@@ -16,22 +16,23 @@ export const updateCandidateProfileDetailsAfterLogIn = async(req , res , next)=>
 }
 
 
-export const updateCompanyProfile = async(req , res , next)=>{
+export const updateEmployerProfile = async(req , res , next)=>{
     const {
         employerProfile:{
             companyName,
             companySize,
             industry,
             budgetRange,
-            hiringHistory
+            // hiringHistory
         }
     }= req.body;
-    const user = await User.findByIdAndUpdate(req.user.id , {
+    const user = await User.findByIdAndUpdate(req.user.id , {employerProfile:{
         companyName,
         companySize,
         industry,
         budgetRange,
-        hiringHistory
+        // hiringHistory
+    }
     }, {
         new:true
     })

@@ -8,7 +8,7 @@ import { bootstrap } from './src/app.controller.js';
 
 const app = express();
 // 2. Port will now correctly read from .env or default to 5000
-const port =3000 || process.env.PORT;
+const port =3004 || process.env.PORT;
 
 // 3. Initialize routes and middleware
 bootstrap(app, express);
