@@ -4,6 +4,7 @@ import authRouter from './modules/auth/auth.controller.js';
 import userRouter from './modules/user/user.controller.js';
 import jobRouter from './modules/job/job.controller.js';
 import companyRouter from './modules/company/company.controller.js';
+import candidateRouter from "./modules/candidate/candidate.controller.js"
 export const bootstrap =async(app ,express)=>{
     console.log("Bootstrap is running..."); // TEST 1
     app.use(express.json());
@@ -16,5 +17,6 @@ export const bootstrap =async(app ,express)=>{
     app.use("/user", userRouter)
     app.use("/job", jobRouter)
     app.use("/company", companyRouter)
+    app.use("/candidate" , candidateRouter)
     
 }

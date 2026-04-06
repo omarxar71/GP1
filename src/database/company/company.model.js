@@ -3,19 +3,22 @@ import { Schema, model } from 'mongoose';
 const companySchema = new Schema({
     name: { type: String, required: true, trim: true },
     CompanyEmail: { type: String, required: true, unique: true }, // The company's main account
-    employees: [{ type: Schema.Types.ObjectId, ref: 'User' }], // List of users associated with the company
+    employees: [
+        {user:{ type: Schema.Types.ObjectId, ref: 'User' },
+        status:{
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default:"pending"
+    }, joinedAt: { type: Date, default: Date.now } }], // List of users associated with the company
     industry: { type: String, required: true },
     size: { type: String, enum: ['1-10', '11-50', '51-200', '201+'] },
     website: String,
     logo: String,
     // Recruitment Specifics
     admin: {
-        firstName: String,
-        lastName: String,
-        phone: String,
-        adminEmail: String
+        adminEmail: String,
+        id:{type: Schema.Types.ObjectId, ref: 'User' }
     },
-    
     // Revenue Logic
     preferredPricing: { 
         type: String, 
@@ -26,6 +29,7 @@ const companySchema = new Schema({
     
     // Security
     isApproved: { type: Boolean, default: false }, // Admin must approve company
+    isVerified: { type: Boolean, default: false }, // Verify company email
 }, { timestamps: true  , toJSON: { virtuals: true }  , toObject: { virtuals: true } }
 );
 companySchema.virtual("jobs",{

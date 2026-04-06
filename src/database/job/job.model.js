@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import {Types } from 'mongoose'; // Add Types here
 const JobSchema = new mongoose.Schema({
     title: { type: String, required: true, trim: true },
     company: { type: Types.ObjectId, ref: 'Company', required: true },
@@ -31,4 +32,4 @@ const JobSchema = new mongoose.Schema({
 
 
 
-const Job = mongoose.model("Job" , JobSchema)
+export const Job = mongoose.model("Job" , JobSchema)

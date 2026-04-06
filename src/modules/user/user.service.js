@@ -15,29 +15,4 @@ export const updateCandidateProfileDetailsAfterLogIn = async(req , res , next)=>
     return res.status(200).json({message:"user profile details updated successfully" , user});
 }
 
-
-export const updateEmployerProfile = async(req , res , next)=>{
-    const {
-        employerProfile:{
-            companyName,
-            companySize,
-            industry,
-            budgetRange,
-            // hiringHistory
-        }
-    }= req.body;
-    const user = await User.findByIdAndUpdate(req.user.id , {employerProfile:{
-        companyName,
-        companySize,
-        industry,
-        budgetRange,
-        // hiringHistory
-    }
-    }, {
-        new:true
-    })
-    if(!user || user.role !=="employer"){
-        return res.status(404).json({message :  " user not found or user is not and employer"})
-    }
-        return res.status(200).json({message : "user found and the user is employer" , user })
-}
+//this is the company employer not our system employer

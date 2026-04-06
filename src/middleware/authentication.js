@@ -7,15 +7,13 @@ export const authenticationMiddleware = async(req ,res, next)=>{
             return res.status(401).json({message:"token is missing"});
         }
         const payload = verifyToken({token:auth , secretKey:process.env.TokenSecretekey})
-        
         const user = await User.findOne({_id:payload.id}).select('-password');
-        
         if(!user){
             return res.status(401).json({message:"invalid token or user not found"});
         }
         req.user=user;
         next();
     }catch (err){
-        return res.status(500).json({message:"internal server error"});
+        return res.status(500).json({message:"internal server error" ,error: err.message});
     }
 }
