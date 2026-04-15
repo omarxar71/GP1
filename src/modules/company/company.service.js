@@ -23,7 +23,7 @@ try {
         preferredPricing,
         commissionRate,
         // admin,
-        employees: [req.user._id]
+       
     })
     const user = await User.findByIdAndUpdate(req.user.id , {role,employerProfile:{
         EmployerCompanyName,
@@ -42,7 +42,7 @@ try {
     return res.status(201).json({message  : "company created successfully and otp is sent" , NewCompany : CreateCompany , user})
    
 }catch(error){
-    return res.status(500).json({message : "internal server error" , error:error.message})
+    return res.status(500).json({message : `internal server error from company profile${error.message}` , error:error})
 }
 
 }
@@ -78,15 +78,15 @@ export const requestRegisterForCompany = async(req ,res , next)=>{
    //3-we will add the employee id to the company document in the pending request list
     try{
         const userId = req.user.id
-        const{companyId}=req.params
-        if(!companyId){
+        const{companyEmail}=req.body
+        if(!companyEmail){
             return res.status(400).json({message : "company id is required"})
 
         }
         if(req.user.role !=="employer"){
             return res.status(404).json({message : "you are not an employer"})
         }
-        const company = await Company.findById(companyId)
+        const company = await Company.findOne({email:companyEmail})
         if(!company){
             return res.status(404).json({message : "company not found"})
 

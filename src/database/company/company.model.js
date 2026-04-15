@@ -1,49 +1,47 @@
 import { Schema, model } from 'mongoose';
 
 const companySchema = new Schema({
-    name: { type: String, required: true, trim: true },
-    CompanyEmail: { type: String, required: true, unique: true }, // The company's main account
     employees: [
-        {user:{ type: Schema.Types.ObjectId, ref: 'User' },
-        status:{
-        type: String,
-        enum: ['pending', 'approved', 'rejected'],
-        default:"pending"
-    }, joinedAt: { type: Date, default: Date.now } }], // List of users associated with the company
+        {
+            user: { type: Schema.Types.ObjectId, ref: 'User' },
+            role: { 
+                type: String, 
+                enum: ['admin', 'hr', 'viewer'],
+                default: 'viewer'
+            },
+            status: {
+                type: String,
+                enum: ['pending', 'approved', 'rejected'],
+                default: 'pending'
+            },
+            joinedAt: { type: Date, default: Date.now }
+        }
+    ],
+    name: { type: String, required: true, trim: true },
+    CompanyEmail: { type: String, required: true, unique: true },
     industry: { type: String, required: true },
     size: { type: String, enum: ['1-10', '11-50', '51-200', '201+'] },
     website: String,
     logo: String,
-    // Recruitment Specifics
     admin: {
         adminEmail: String,
-        id:{type: Schema.Types.ObjectId, ref: 'User' }
+        id:{ type: Schema.Types.ObjectId, ref: 'User' }
     },
-    // Revenue Logic
     preferredPricing: { 
         type: String, 
         enum: ['Percentage', 'Fixed'], 
         default: 'Fixed' 
     },
-    commissionRate: { type: Number }, // e.g., 15 (for 15%)
-    
-    // Security
-    isApproved: { type: Boolean, default: false }, // Admin must approve company
-    isVerified: { type: Boolean, default: false }, // Verify company email
-}, { timestamps: true  , toJSON: { virtuals: true }  , toObject: { virtuals: true } }
+    commissionRate: { type: Number },
+    isApproved: { type: Boolean, default: false },
+    isVerified: { type: Boolean, default: false },
+}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
-companySchema.virtual("jobs",{
-    ref:"Job",
-    localField:"_id",
-    foreignField:"companyId",
-})
+
+companySchema.virtual("jobs", {
+    ref: "Job",
+    localField: "_id",
+    foreignField: "companyId",
+});
 
 export const Company = model('Company', companySchema);
-
-
-
-// so the flow will be like: 
-//     1- the first admin of the company logs in and creates his personal account as an employer
-//     2- this first employer will be asked if his company is already in hireBridge application:
-//                                                                                             a- let say no -> then the employer will be asked to fill the company details and submit it for approval
-//                                                                                             b-let say yes -> then this employer will search for his company and request the admin to approve his account to be able to post jobs and manage the company profile

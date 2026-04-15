@@ -2,56 +2,82 @@ import User from "../../database/User/user.model.js"
 import { Company } from '../../database/company/company.model.js';
 import { Job } from '../../database/job/job.model.js';
 //employer post the job to the system
-export const postJob= async (req ,res ,next)=>{
-    //1-take the job specifics 
-    //2-make sure that the person trying to post a job is employer
-    //3- make sure that the employer trying to post for a company is registered for that company
-        //a- take the userid of the employer who are trying to post a job
-        //b-take the company id that this employer trying to post to
-        //c-post the job to the system
-try{
-    const userId= req.user.id
-    const {companyId} = req.params
-    const {title , category , description ,skillsRequired ,experienceLevel ,minExperience ,budget ,workType}= req.body
-    const findCompany = await Company.findById(companyId)
-    if(!findCompany)
-        return res.status(404).json({message : "company not found"})
-    //search for the user in that company 
-    const searchUser = findCompany.employees.find((user)=>{
-        return user.user.toString() == userId.toString()
-    })
-    if(searchUser == undefined)
-        return res.status(404).json({message : "you are not authorized to post for this company"})
-    
-    const createJob = await Job.create({
-        title,company:companyId,employerId:userId, category , description ,skillsRequired ,experienceLevel ,minExperience ,budget ,workType
-    })
-    return res.status(200).json({message : "job created successfully" , job:createJob})
-}
-catch{
-    return res.status(500).json({ message: "Internal server error", error: error.message });
-}
+export const postJob = async (req, res, next) => {
+    try {
+        const userId = req.user.id
+        const { companyId } = req.params
+        const { title, category, description, skillsRequired, experienceLevel, minExperience, budget, workType } = req.body
+
+        const findCompany = await Company.findById(companyId)
+        if (!findCompany)
+            return res.status(404).json({ message: "company not found" })
+
+        const isAdmin = findCompany.admin.adminEmail === req.user.email
+
+        const isEmployee = findCompany.employees.find(emp =>
+            emp.user.equals(userId) && emp.status === "approved"
+        )
+
+        if (!isAdmin && !isEmployee)
+            return res.status(403).json({ message: "you are not authorized to post for this company" })
+
+        const createJob = await Job.create({
+            title, company: companyId, employerId: userId, category, description, skillsRequired, experienceLevel, minExperience, budget, workType
+        })
+
+        return res.status(200).json({ message: "job created successfully", job: createJob })
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error", error: error.message })
+    }
 }
 //delete job
-export const deleteJob = async(req ,res,next)=>{
-    const {jobId} = req.params
-    const job = await Job.findById(jobId)
-    if(!job.employerId == req.user.id || !req.user.role =="admin"){
-        return res.status(400).json({message : "you are not authorized to delete this job"})
+export const deleteJob = async (req, res, next) => {
+    try {
+        const { jobId } = req.params
 
+        const job = await Job.findById(jobId)
+        if (!job)
+            return res.status(404).json({ message: "job not found or already deleted" })
+
+        const findCompany = await Company.findById(job.company)
+
+        const isSystemAdmin = req.user.role === "systemAdmin"
+
+        const isCompanyAdmin = findCompany.admin.adminEmail === req.user.email
+
+        const isEmployee = findCompany.employees.find(emp =>
+            emp.user.equals(req.user.id) && emp.status === "approved"
+        )
+
+        if (!isSystemAdmin && !isCompanyAdmin && !isEmployee)
+            return res.status(403).json({ message: "you are not authorized to delete this job" })
+
+        await job.deleteOne()
+        return res.status(200).json({ message: "job deleted successfully" })
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error", error: error.message })
     }
-    await job.deleteOne()
-    return res.status(200).json({message :"job deleted successfully"})
 }
 //get all the jobs posted by a specific company only system can see this lists 
 export const getJobsOfSpecificCompany = async(req ,res , next)=>{
   try {
     const {companyId} = req.params
+    const company = await Company.findById(companyId)
+    const findJobs = await Job.find({company:companyId})
 
-    if(req.user.role !== "employer" )
-        return res.status(404).json({message : "you are not authorized to see that"})
-    const findJobs = await Job.find(companyId)
-    return res.status(200).json({message : "all jobs" , jobs:findJobs})
+    if(!company)
+        return res.status(404).json({message : "company not found"})
+    const searchEmployee = company.employees.find((emp)=>{
+        if(emp.user.toJSON() == req.user.id.toJSON() && emp.status == "approved"){
+            return emp
+        }
+
+    })
+    if(searchEmployee || company.admin.adminEmail === req.user.email || req.user.role === "systemAdmin")
+        return res.status(200).json({message : "all jobs" , jobs:findJobs})
+
+    return res.status(403).json({message : "you are not authorized to see the jobs of this company"})
+   
   } catch (error) {
     return res.status(500).json({message : "server error" , error:error.message})
   }
@@ -71,23 +97,23 @@ export const shortListedForCompany = async(req , res , next)=>{
    try {
     const {jobId} = req.params
     const EmployerId = req.user.id
-    const job = await Job.findOne(jobId)
-    const companyId = job.company
-    const findCompany = await Company.findById(companyId)
+    const job = await Job.findById(jobId)
     if (!job)
         return res.status(435).json({message : "job not found"})
-    const findIfEmployerOfCompany = findCompany.employees.map((emp)=>{
-        if(emp ==EmployerId){
+    const companyId = job.company
+    const findCompany = await Company.findById(companyId)
+    const searchEmployee = findCompany.employees.find((emp)=>{
+        if(emp.user.toJSON() == req.user.id.toJSON() && emp.status == "approved"){
             return emp
-        }else{
-            return res.status(404).json({message : "you are not an employer for this company"})
         }
-        
+
     })
-    if(findIfEmployerOfCompany)
-        return res.status(200).json({message : "all the shortlisted for this job"  , shortListedForCompany:job.shortlistedCandidates})
+    if(searchEmployee || findCompany.admin.adminEmail === req.user.email || req.user.role === "systemAdmin")
+        return res.status(200).json({message : "all candidates for this job" , candidatesOfThisJob:job.shortlistedCandidates})
+
+    return res.status(403).json({message : "you are not authorized to see the jobs of this company"})
+   
     
-    return res.status(200).json({message : "all the shortListed for this job"})
    } catch (error) {
     return res.status(500).json({message : "server error" , error : error.message})
     

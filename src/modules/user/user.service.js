@@ -18,4 +18,4 @@ export const updateCandidateProfileDetailsAfterLogIn = async(req , res , next)=>
    }
 }
 
-//this is the company employer not our system employer
+
