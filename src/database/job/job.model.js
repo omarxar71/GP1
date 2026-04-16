@@ -25,8 +25,17 @@ const JobSchema = new mongoose.Schema({
     
     // Metadata
     status: { type: String, enum: ['Draft', 'Active', 'Filled', 'Cancelled'], default: 'Active' },
-    appliedCandidates: [{ type: Types.ObjectId, ref: 'User' }], // Track interested users
-    shortlistedCandidates: [{ type: Types.ObjectId, ref: 'User' }] // Track filtered users
+    shortlistedCandidates: [{ type: Types.ObjectId, ref: 'User' }], // Track filtered users
+    acceptedCandidates: [{
+        candidate: { type: mongoose.Schema.Types.ObjectId, ref: 'Candidate' },
+        acceptedAt: { type: Date, default: Date.now }
+    }],
+    rejectedCandidates: [{
+        candidate: { type: mongoose.Schema.Types.ObjectId, ref: 'Candidate' },
+        rejectedAt: { type: Date, default: Date.now },
+        reason: { type: String }   // optional rejection reason
+    }]
+
 }, { timestamps: true }
 )
 
