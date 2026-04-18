@@ -3,7 +3,7 @@ import mongoose from "mongoose"
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String, required: true}, 
-  role: { type: String, enum: ['candidate', 'CompanyEmployer', 'systemAdmin']},
+  role: { type: String, enum: ['candidate', 'CompanyEmployer', 'systemAdmin','superAdmin']},
   
   firstName: String,
   lastName: String,
@@ -16,7 +16,10 @@ const userSchema = new mongoose.Schema({
   candidateProfile: {
     specialization: { type: String, enum: ['Sales', 'Engineering', 'Marketing', 'HR', 'Accounting', 'IT', 'Customer Service'] },
     experienceLevel: { type: String, enum: ['Junior', 'Mid', 'Senior', 'Lead'] },
-    expectedSalary: Number,
+   expectedSalary: {
+        min: { type: Number },
+        max: { type: Number }
+    },
     workType: { type: String, enum: ['Remote', 'On-site', 'Hybrid'] },
     cvUrl: String,
     skills: [String],

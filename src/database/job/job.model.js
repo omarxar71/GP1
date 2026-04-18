@@ -21,7 +21,11 @@ const JobSchema = new mongoose.Schema({
     
     // Metadata
     status: { type: String, enum: ['Draft', 'Active', 'Filled', 'Cancelled'], default: 'Active' },
-    shortlistedCandidates: [{ type: Types.ObjectId, ref: 'User' }], // Track filtered users
+    shortlistedCandidates: [{
+        candidate: { type: Types.ObjectId, ref: 'User' },
+        sentBy: { type: Types.ObjectId, ref: 'User' },
+        sentAt: { type: Date, default: Date.now }
+    }],
     acceptedCandidates: [{
         candidate: { type: mongoose.Schema.Types.ObjectId, ref: 'Candidate' },
         acceptedAt: { type: Date, default: Date.now }

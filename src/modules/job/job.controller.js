@@ -15,6 +15,5 @@ router.post("/accept-candidate-from-shortlisting/:jobId/:candidateId", authentic
 
 
 
-router.post("/add-candidate-shortlist/:jobId" , authenticationMiddleware , jobService.addCanToShortlist)
-router.post("/remove-can-from-shortlist/:jobId" , authenticationMiddleware , jobService.deleteCandidateFromShortlist)
+
 export default router
