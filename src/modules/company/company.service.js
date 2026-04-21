@@ -4,6 +4,7 @@ import { generateHTMLFormEmail } from "../../utils/generateHTML/generateHTML.js"
 import sendEmail from "../../utils/sendEmail/nodemailer.js"
 import Randomstring from "randomstring"
 import { verifyToken } from "../../utils/token/token.js"
+import {Job} from "../../database/job/job.model.js"
 import OTP from "../../database/OTP/otp.model.js"
 export const CreateCompanyProfile = async(req ,res , next)=>{
 try {
@@ -86,7 +87,30 @@ try {
     return res.status(500).json({message : "internal server error" , error:error.message})
 }    
 }
+//get all the jobs posted by a specific company only system can see this lists 
+export const getJobsOfSpecificCompany = async(req ,res , next)=>{
+  try {
+    const {companyId} = req.params
+    const company = await Company.findById(companyId)
+    const findJobs = await Job.find({company:companyId})
 
+    if(!company)
+        return res.status(404).json({message : "company not found"})
+    const searchEmployee = company.employees.find((emp)=>{
+        if(emp.user.toJSON() == req.user.id.toJSON() && emp.status == "approved"){
+            return emp
+        }
+
+    })
+    if(searchEmployee || company.admin.adminEmail === req.user.email || req.user.role === "systemAdmin")
+        return res.status(200).json({message : "all jobs" , jobs:findJobs})
+
+    return res.status(403).json({message : "you are not authorized to see the jobs of this company"})
+   
+  } catch (error) {
+    return res.status(500).json({message : "server error" , error:error.message})
+  }
+}
 
 export const requestRegisterForCompany = async(req ,res , next)=>{
    //1-the employee will head to the company he wants to join and we will git the company id from the link

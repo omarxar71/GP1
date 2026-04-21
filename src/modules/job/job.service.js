@@ -78,30 +78,7 @@ export const deleteJob = async (req, res, next) => {
         return res.status(500).json({ message: "Internal server error", error: error.message })
     }
 }
-//get all the jobs posted by a specific company only system can see this lists 
-export const getJobsOfSpecificCompany = async(req ,res , next)=>{
-  try {
-    const {companyId} = req.params
-    const company = await Company.findById(companyId)
-    const findJobs = await Job.find({company:companyId})
 
-    if(!company)
-        return res.status(404).json({message : "company not found"})
-    const searchEmployee = company.employees.find((emp)=>{
-        if(emp.user.toJSON() == req.user.id.toJSON() && emp.status == "approved"){
-            return emp
-        }
-
-    })
-    if(searchEmployee || company.admin.adminEmail === req.user.email || req.user.role === "systemAdmin")
-        return res.status(200).json({message : "all jobs" , jobs:findJobs})
-
-    return res.status(403).json({message : "you are not authorized to see the jobs of this company"})
-   
-  } catch (error) {
-    return res.status(500).json({message : "server error" , error:error.message})
-  }
-}
 //get all the job posted by all the companies 
 export const getAllJobs = async(req ,res , next)=>{
    try {
@@ -192,12 +169,13 @@ export const rejectCandidate=async(req , res, next)=>{
         const company = await Company.findById(job.company)
         if(!job)
             return res.status(404).json({message : "job not found"})
-        const isShortlisted = job.shortlistedCandidates.find(item=>item.id === candidateId)
+        const isShortlisted = job.shortlistedCandidates.find(item=>item.candidate === candidateId)
         if(!isShortlisted)
             return res.status(400).json({message : "candidate is not shortlisted for this job"})
         const isAdmin = company.admin.adminEmail === req.user.email
+        const isSystemAdmin = req.user.role === "systemAdmin"
         const isEmployer = company.employees.find(emp=>emp.user.equals(req.user.id) && emp.status === "approved")
-        if(!isAdmin && !isEmployer)
+        if(!isAdmin && !isEmployer && !isSystemAdmin)
             return res.status(403).json({message : "you are not authorized to reject a candidate"})
         job.rejectedCandidates.push({candidate:candidateId})
         await job.save()

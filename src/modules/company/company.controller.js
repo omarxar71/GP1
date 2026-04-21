@@ -8,5 +8,6 @@ router.post("/verifyCompanyEmail" ,authenticationMiddleware, companyService.veri
 router.post("/requestToJoinCompany" , authenticationMiddleware , companyService.requestRegisterForCompany)
 router.get("/getAllPendingForCompany/:companyId",authenticationMiddleware ,companyService.getAllThePendingListForCompany )
 router.put("/acceptOrRejectEmp/:companyId" , authenticationMiddleware , companyService.acceptOrRejectEmp)
+router.get("/getSpecificCompanyJobs/:companyId" , authenticationMiddleware , companyService.getJobsOfSpecificCompany)
 
 export default router

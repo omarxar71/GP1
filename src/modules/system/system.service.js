@@ -102,7 +102,6 @@ export const getMatchingCandidates = async (req, res, next) => {
     }
 }
 
-
 // add candidate to the shortlist of the job
 export const sendCandidateToJob = async (req, res, next) => {
     try {
@@ -157,27 +156,54 @@ export const sendCandidateToJob = async (req, res, next) => {
     }
 }
 // remove a candidate from the shortlist
-export const deleteCandidateFromShortlist = async(req ,res , next)=>{
+export const deleteCandidateFromShortlist = async (req, res, next) => {
     try {
-        const {jobId} = req.params
-        const {candidateEmail}= req.body
-        if(req.user.role !=="admin")
-            return res.status(400).json({message: "you are not authorized to remove a candidate"})
-        const candidate= await User.findOne({email:candidateEmail})
-        if(!candidate)
-            return res.status(404).json({message : "candidate not found"})
-        const candidateId = candidate._id
+        const { jobId } = req.params
+        const { candidateId } = req.body
+
+        // only systemAdmin or superAdmin can remove candidates
+        if (req.user.role !== "systemAdmin" && req.user.role !== "superAdmin")
+            return res.status(403).json({ message: "you are not authorized to remove a candidate" })
+
+        // get the job
         const job = await Job.findById(jobId)
-        if(!job)
-            return res.status(404).json({message : "job not found "})
-        job.shortlistedCandidates=job.shortlistedCandidates.filter((emp)=>{
-            return emp.toJSON() !==candidateId.toJSON()
-        })
+        if (!job)
+            return res.status(404).json({ message: "job not found" })
+
+        // get the candidate
+        const candidate = await User.findById(candidateId)
+        if (!candidate)
+            return res.status(404).json({ message: "candidate not found" })
+
+        // check if candidate is in the shortlist
+        const isInShortlist = job.shortlistedCandidates.find(item =>
+            item.candidate.equals(candidateId)
+        )
+        if (!isInShortlist)
+            return res.status(400).json({ message: "candidate is not in the shortlist" })
+
+        // remove from shortlistedCandidates
+        job.shortlistedCandidates = job.shortlistedCandidates.filter(item =>
+            !item.candidate.equals(candidateId)
+        )
+
         await job.save()
-        return res.status(200).json({message : "user removed successfully"})
+
+        return res.status(200).json({
+            message: "candidate removed from shortlist successfully",
+            shortlistedCandidates: job.shortlistedCandidates
+        })
+
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error", error: error.message })
+    }
+}
+
+
+export const getInterviews = async(req ,res , next)=>{
+    try {
      
     } catch (error) {
-    return res.status(500).json({message : "server error" , error : error.message})
-        
+        return res.status(500).json({message : "internal server error" , error : error.message})
     }
 }

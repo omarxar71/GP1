@@ -6,6 +6,7 @@ import jobRouter from './modules/job/job.controller.js';
 import companyRouter from './modules/company/company.controller.js';
 import candidateRouter from "./modules/candidate/candidate.controller.js"
 import systemRouter from "./modules/system/system.controller.js"
+import interviewRouter from"./modules/interview/interview.controller.js"
 import { seedSuperAdmin } from "./modules/system/system.service.js"
 export const bootstrap = async (app, express) => {
     console.log("Bootstrap is running..."); // TEST 1
@@ -22,4 +23,5 @@ export const bootstrap = async (app, express) => {
     app.use("/company", companyRouter)
     app.use("/candidate", candidateRouter)
     app.use("/system", systemRouter)
+    app.use("/interview" , interviewRouter)
 }
