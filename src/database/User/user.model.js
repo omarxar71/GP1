@@ -13,19 +13,29 @@ const userSchema = new mongoose.Schema({
   reputationScore: { type: Number, default: 100 },
   isVerified: { type: Boolean, default: false },
 
-  candidateProfile: {
-    specialization: { type: String, enum: ['Sales', 'Engineering', 'Marketing', 'HR', 'Accounting', 'IT', 'Customer Service'] },
-    experienceLevel: { type: String, enum: ['Junior', 'Mid', 'Senior', 'Lead'] },
-   expectedSalary: {
-        min: { type: Number },
-        max: { type: Number }
-    },
-    workType: { type: String, enum: ['Remote', 'On-site', 'Hybrid'] },
-    cvUrl: String,
-    skills: [String],
-    probationPerformance: { type: Number, min: 0, max: 100 }, // For the AI performance prediction
-    status: { type: String, enum: ['Available', 'Interviewing', 'Hired'], default: 'Available' }
+ candidateProfile: {
+  cvUrl: { type: String },
+  specialization: { type: String, enum: ['Sales', 'Engineering', 'Marketing', 'HR', 'Accounting', 'IT', 'Customer Service'] },
+  experienceLevel: { type: String, enum: ['Junior', 'Mid', 'Senior', 'Lead'] },
+  expectedSalary: {
+    min: { type: Number },
+    max: { type: Number }
   },
+  fraudCheck: {
+    status: { 
+      type: String, 
+      enum: ['pending', 'clear', 'flagged', 'highly_suspicious'],
+      default: 'pending' 
+    },
+    score: { 
+      type: Number, 
+      min: 0, 
+      max: 100 
+    },
+    reason: { type: String },
+    checkedAt: { type: Date }
+  }
+},
 
   employerProfile: {
     EmployerCompanyName: String,
