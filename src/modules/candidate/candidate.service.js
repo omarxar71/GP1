@@ -48,7 +48,7 @@ export const uploadCandidateCV = async (req, res, next) => {
 };
 
 
-const genAI = new GoogleGenerativeAI("AIzaSyB4LlrwaWjDvU4-NVfZz43FwAHBaATI2iI");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export const checkMyCvFraud = async (req, res, next) => {
     try {
