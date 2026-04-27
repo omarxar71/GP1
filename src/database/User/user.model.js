@@ -9,7 +9,6 @@ const userSchema = new mongoose.Schema({
   lastName: String,
   phoneNumber: String,
 
-
   reputationScore: { type: Number, default: 100 },
   isVerified: { type: Boolean, default: false },
 
@@ -21,6 +20,8 @@ const userSchema = new mongoose.Schema({
     min: { type: Number },
     max: { type: Number }
   },
+    workType: { type: String, enum: ['fullTime', 'partTime', 'contract', 'remote']},
+  skills: [String],
   fraudCheck: {
     status: { 
       type: String, 
