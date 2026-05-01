@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
     min: { type: Number },
     max: { type: Number }
   },
-    workType: { type: String, enum: ['fullTime', 'partTime', 'contract', 'remote']},
+    workType: { type: String, enum: ['FullTime', 'PartTime', 'Contract', 'Remote']},
   skills: [String],
   fraudCheck: {
     status: { 
@@ -35,7 +35,8 @@ const userSchema = new mongoose.Schema({
     },
     reason: { type: String },
     checkedAt: { type: Date }
-  }
+  },
+  status:{type:String,enum:["Available" , "Hired"] , default:"Available"}
 },
 
   employerProfile: {

@@ -5,11 +5,9 @@ const router= Router()
 router.post("/companyProfile" ,authenticationMiddleware, companyService.CreateCompanyProfile)
 router.get("/getCompanyProfile/:companyId" , authenticationMiddleware , companyService.getCompanyProfile)
 router.post("/verifyCompanyEmail" ,authenticationMiddleware, companyService.verifyCompanyEmail)
-router.post("/requestToJoinCompany" , authenticationMiddleware , companyService.requestRegisterForCompany)
-router.get("/getAllPendingForCompany/:companyId",authenticationMiddleware ,companyService.getAllThePendingListForCompany )
-router.put("/acceptOrRejectEmp/:companyId" , authenticationMiddleware , companyService.acceptOrRejectEmp)
 router.get("/getSpecificCompanyJobs/:companyId" , authenticationMiddleware , companyService.getJobsOfSpecificCompany)
 router.get("/getCompanyInterviews/:companyId", authenticationMiddleware, companyService.getCompanyInterviews)
 router.put("/updateInterviewStatus/:interviewId", authenticationMiddleware, companyService.updateInterviewStatus)
+router.post("/registerEmployee/:companyId", authenticationMiddleware, companyService.registerCompanyEmployee)
 
 export default router
