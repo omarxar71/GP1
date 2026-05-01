@@ -90,7 +90,7 @@ export const getAllJobs = async(req ,res , next)=>{
 }
 
 //get the shortlisted of the job
-export const shortListedForCompany = async(req , res , next)=>{
+export const shortListedCandidatesofSpecifcJobForCompany = async(req , res , next)=>{
    try {
     const {jobId} = req.params
     const EmployerId = req.user.id
