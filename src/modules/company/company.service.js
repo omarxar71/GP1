@@ -179,13 +179,17 @@ export const updateInterviewStatus = async (req, res, next) => {
         const validOutcomes = ['passed', 'failed', 'pending']
         if (outcome && !validOutcomes.includes(outcome))
             return res.status(400).json({ message: `invalid outcome. must be one of: ${validOutcomes.join(', ')}` })
+        const user = await User.findById(interview.candidate)
 
         // update only the provided fields
         if (status) interview.status = status
+
         if (outcome) interview.outcome = outcome
+        if (outcome == "passed") user.candidateProfile.status = "hired"
         if (notes) interview.notes = notes
 
         await interview.save()
+        await user.save()
 
         return res.status(200).json({ message: "interview updated successfully", interview })
     } catch (error) {

@@ -25,7 +25,7 @@ export const login=async(req,res,next)=>{
     }
 }
 export const signUp = async(req,res,next)=>{
-    const{email , password  , firstName , LastName , PhoneNumber  }=req.body;
+    const{email , password  , firstName , LastName , PhoneNumber }=req.body;
     try{
         const checkIfUserSigned = await User.findOne({email})
         if(checkIfUserSigned){
@@ -33,8 +33,7 @@ export const signUp = async(req,res,next)=>{
         }
         
         const creatuser = await User.create({
-            email , password:hashing({plainText:password})  , firstName , LastName , PhoneNumber
-        })
+            email , password:hashing({plainText:password})  , firstName , LastName , PhoneNumber ,  status:"Available"})
         const otp = Randomstring.generate({length:5 , charset:'numeric'})
         const saveOTPInDB = await OTP.create({email , otp})
         const isSent = await sendEmail({to : email , subject:"Welcome to HireBridge" , html:generateHTMLFormEmail({otp , name:firstName})})
