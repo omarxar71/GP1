@@ -9,5 +9,7 @@ router.post("/requestToJoinCompany" , authenticationMiddleware , companyService.
 router.get("/getAllPendingForCompany/:companyId",authenticationMiddleware ,companyService.getAllThePendingListForCompany )
 router.put("/acceptOrRejectEmp/:companyId" , authenticationMiddleware , companyService.acceptOrRejectEmp)
 router.get("/getSpecificCompanyJobs/:companyId" , authenticationMiddleware , companyService.getJobsOfSpecificCompany)
+router.get("/getCompanyInterviews/:companyId", authenticationMiddleware, companyService.getCompanyInterviews)
+router.put("/updateInterviewStatus/:interviewId", authenticationMiddleware, companyService.updateInterviewStatus)
 
 export default router

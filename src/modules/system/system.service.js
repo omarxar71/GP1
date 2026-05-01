@@ -234,19 +234,24 @@ export const getAllJobs = async (req, res, next) => {
             .populate("company")
             .populate("employerId")
             .populate("shortlistedCandidates.candidate")
-        if (!jobs)
-            return res.status(404).json({ message: "jobs not found" })
-        return res.status(200).json({ message: "jobs found", total: jobs.length, jobs })
+
+        // attach interviews to each job
+        const jobsWithInterviews = await Promise.all(
+            jobs.map(async (job) => {
+                const interviews = await Interview.find({ job: job._id })
+                    .populate("candidate")
+                    .populate("scheduledBy")
+                return { ...job.toObject(), interviews }
+            })
+        )
+
+        if (!jobsWithInterviews || jobsWithInterviews.length === 0)
+            return res.status(200).json({ message: "no jobs found", jobs: [] })
+        return res.status(200).json({ message: "jobs found", total: jobsWithInterviews.length, jobs: jobsWithInterviews })
     } catch (error) {
         return res.status(500).json({ message: "internal server error", error: error.message })
     }
 }
-
-
-
-
-
-
 
 export const predictProbationSuccess = async (req, res, next) => {
     try {

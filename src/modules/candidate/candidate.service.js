@@ -1,4 +1,5 @@
 import User from "../../database/User/user.model.js"
+import { Interview } from "../../database/interview/interview.model.js"
 import axios from 'axios';
 import { CanvasFactory } from 'pdf-parse/worker';
 import { PDFParse } from 'pdf-parse';
@@ -120,3 +121,27 @@ export const checkMyCvFraud = async (req, res, next) => {
         return res.status(500).json({ message: "Internal server error", error: error.message });
     }
 };
+
+export const getCandidateInterviews = async (req, res, next) => {
+    try {
+        const isAdmin = req.user.role === "superAdmin" || req.user.role === "systemAdmin"
+        const candidateId = req.params.candidateId || req.user.id
+        const candidate = await User.findById(candidateId)
+        if (!candidate)
+            return res.status(404).json({ message: "candidate not found" })
+        if (candidate.role !== "candidate" && !isAdmin)
+            return res.status(403).json({ message: "you are not a candidate" })
+        if (!isAdmin && req.user.id !== candidateId)
+            return res.status(403).json({ message: "you are not authorized to view these interviews" })
+
+        const interviews = await Interview.find({ candidate: candidateId })
+            .populate("job")
+            .populate("company")
+        if (!interviews || interviews.length === 0)
+            return res.status(200).json({ message: "no interviews found", interviews: [] })
+
+        return res.status(200).json({ message: "interviews found", total: interviews.length, interviews })
+    } catch (error) {
+        return res.status(500).json({ message: "internal server error", error: error.message })
+    }
+}

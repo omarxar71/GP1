@@ -5,6 +5,7 @@ import sendEmail from "../../utils/sendEmail/nodemailer.js"
 import Randomstring from "randomstring"
 import { verifyToken } from "../../utils/token/token.js"
 import {Job} from "../../database/job/job.model.js"
+import { Interview } from "../../database/interview/interview.model.js"
 import OTP from "../../database/OTP/otp.model.js"
 export const CreateCompanyProfile = async(req ,res , next)=>{
 try {
@@ -200,4 +201,83 @@ export const acceptOrRejectEmp = async(req ,res , next)=>{
     return res.status(500).json({message : "internal server error" , error : error.message})
     
    }
+}
+
+export const getCompanyInterviews = async (req, res, next) => {
+    try {
+        const { companyId } = req.params
+        const company = await Company.findById(companyId)
+        if (!company)
+            return res.status(404).json({ message: "company not found" })
+
+        // check if the user is the company admin
+        const isAdmin = company.admin?.adminEmail === req.user.email
+
+        // check if the user is a system admin or super admin
+        const isSysAdmin = req.user.role === "superAdmin" || req.user.role === "systemAdmin"
+
+        // check if the user is an approved employee
+        const isEmployee = company.employees.find((emp) => {
+            return emp.user.toString() === req.user.id && emp.status === "approved"
+        })
+        if (!isAdmin && !isEmployee && !isSysAdmin)
+            return res.status(403).json({ message: "you are not authorized to view this company's interviews" })
+        const interviews = await Interview.find({ company: companyId })
+            .populate("candidate")
+            .populate("job")
+            .populate("scheduledBy")
+        if (!interviews || interviews.length === 0)
+            return res.status(200).json({ message: "no interviews found", interviews: [] })
+
+        return res.status(200).json({ message: "interviews found", total: interviews.length, interviews })
+    } catch (error) {
+        return res.status(500).json({ message: "internal server error", error: error.message })
+    }
+}
+
+export const updateInterviewStatus = async (req, res, next) => {
+    try {
+        const { interviewId } = req.params
+        const { status, outcome, notes } = req.body
+
+        const interview = await Interview.findById(interviewId)
+        if (!interview)
+            return res.status(404).json({ message: "interview not found" })
+
+        // get the company this interview belongs to
+        const company = await Company.findById(interview.company)
+        if (!company)
+            return res.status(404).json({ message: "company not found" })
+
+        // check authorization: company admin, approved employee, or system admin
+        const isAdmin = company.admin?.adminEmail === req.user.email
+        const isSysAdmin = req.user.role === "superAdmin" || req.user.role === "systemAdmin"
+        const isEmployee = company.employees.find((emp) => {
+            return emp.user.toString() === req.user.id && emp.status === "approved"
+        })
+
+        if (!isAdmin && !isEmployee && !isSysAdmin)
+            return res.status(403).json({ message: "you are not authorized to update this interview" })
+
+        // validate status value
+        const validStatuses = ['scheduled', 'completed', 'cancelled', 'rescheduled']
+        if (status && !validStatuses.includes(status))
+            return res.status(400).json({ message: `invalid status. must be one of: ${validStatuses.join(', ')}` })
+
+        // validate outcome value
+        const validOutcomes = ['passed', 'failed', 'pending']
+        if (outcome && !validOutcomes.includes(outcome))
+            return res.status(400).json({ message: `invalid outcome. must be one of: ${validOutcomes.join(', ')}` })
+
+        // update only the provided fields
+        if (status) interview.status = status
+        if (outcome) interview.outcome = outcome
+        if (notes) interview.notes = notes
+
+        await interview.save()
+
+        return res.status(200).json({ message: "interview updated successfully", interview })
+    } catch (error) {
+        return res.status(500).json({ message: "internal server error", error: error.message })
+    }
 }
